@@ -1,0 +1,9 @@
+Examples: 154047
+Full-target scored tokens: 239621
+First-token scored tokens: 154047
+
+Full-target token-weighted loss: 1.547667
+Full-target token-weighted perplexity: 4.700493
+
+First-token-only token-weighted loss: 2.386344
+First-token-only token-weighted perplexity: 10.873665
