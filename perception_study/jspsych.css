@@ -1,0 +1,187 @@
+/*
+ * Refined CSS for jsPsych experiments
+ * – smaller, cleaner typography
+ * – more harmonious neutral greys
+ * – subtle, professional UI look
+ */
+
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700);
+
+/* Container holding jsPsych content */
+
+.jspsych-display-element {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  /* TYPOGRAPHY */
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-size: 12px;               /* smaller base font */
+  line-height: 1.5em;
+  color: #444;                   /* professional dark grey */
+}
+
+.jspsych-display-element:focus {
+  outline: none;
+}
+
+.jspsych-content-wrapper {
+  display: flex;
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+.jspsych-content {
+  max-width: 95%; 
+  text-align: left;
+  margin: auto;
+  float: inherit;
+  width: 80%;
+}
+
+.jspsych-top {
+  align-items: flex-start;
+}
+.jspsych-middle {
+  align-items: center;
+}
+
+/* Form elements */
+
+.jspsych-display-element input[type="text"] {
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-size: 12px;
+  color: #555;                     /* softer text */
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+}
+
+/* Buttons – softer, more neutral */
+
+.jspsych-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  cursor: pointer;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  background-color: #f7f7f7;        /* soft neutral */
+  border: 1px solid #bbb;
+  color: #333;                     
+  border-radius: 4px;
+}
+
+/* Hover only on devices that can hover */
+@media (hover: hover) {
+  .jspsych-btn:hover {
+    background-color: #e3e3e3;
+    border-color: #999;
+  }
+}
+
+.jspsych-btn:active {
+  background-color: #ddd;
+  border-color: #777;
+}
+
+.jspsych-btn:disabled {
+  background-color: #eee;
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Slider */
+
+.jspsych-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+.jspsych-slider:focus {
+  outline: none;
+}
+
+/* track */
+.jspsych-slider::-webkit-slider-runnable-track,
+.jspsych-slider::-moz-range-track,
+.jspsych-slider::-ms-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: #f0f0f0;
+  border-radius: 2px;
+  border: 1px solid #bbb;
+}
+
+/* thumb */
+.jspsych-slider::-webkit-slider-thumb {
+  border: 1px solid #777;
+  height: 20px;
+  width: 14px;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -7px;
+}
+.jspsych-slider::-moz-range-thumb,
+.jspsych-slider::-ms-thumb {
+  border: 1px solid #777;
+  height: 20px;
+  width: 14px;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* Progress bar */
+
+#jspsych-progressbar-container {
+  color: #666;
+  border-bottom: 1px solid #ddd;
+  background-color: #fafafa;
+  margin-bottom: 1em;
+  text-align: center;
+  padding: 8px 0px;
+  width: 100%;
+  line-height: 1em;
+}
+
+#jspsych-progressbar-container span {
+  font-size: 12px;
+  padding-right: 14px;
+}
+
+#jspsych-progressbar-outer {
+  background-color: #eee;
+  width: 50%;
+  margin: auto;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+}
+
+#jspsych-progressbar-inner {
+  background-color: #999;
+  width: 0%;
+  height: 100%;
+}
+
+/* Data display */
+
+#jspsych-data-display {
+  text-align: left;
+  font-size: 12px;
+  color: #444;
+}
