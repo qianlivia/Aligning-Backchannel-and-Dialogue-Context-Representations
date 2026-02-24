@@ -2,7 +2,7 @@ import re
 import string
 from typing import Union
 
-num_past_turns = 50
+num_past_turns = 50 # how many past turns to include in context
 INPUT_FILE = "llm/data/lm_test.txt"
 BC_FILE = f"llm/data/past_turns_test_context_bc/test_set_bc_{num_past_turns}.txt"
 CTX_FILE = f"llm/data/past_turns_test_context_bc/test_set_context_{num_past_turns}.txt"

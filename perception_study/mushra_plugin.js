@@ -2,11 +2,8 @@
  *
  * jspsych-survey-mushra
  * mushra-like listening test jspsych plugin
- *
- * adapted from jspsych-survey-multi-choice
- *
+ * 
  */
-
 
 jsPsych.plugins['survey-mushra'] = (function() {
 
@@ -336,12 +333,8 @@ jsPsych.plugins['survey-mushra'] = (function() {
   `
     }
 
-
-
-
-
-    // generate audio order. this is randomized here as opposed to randomizing the order of trial.audios
-    // so that the data are always associated with the same audio regardless of order
+    // Generate audio order. This is randomized here as opposed to randomizing the order of trial.audios
+    // so that the data are always associated with the same audio regardless of order.
     var audio_order = [];
     for(var i=0; i<trial.audios.length; i++){
       audio_order.push(i);
@@ -363,7 +356,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
       var audio = trial.audios[audio_order[i]];
       var audio_id = audio_order[i];
 
-      // create question container
       var question_classes = ['jspsych-survey-mushra-question'];
       if (audio.horizontal) {
         question_classes.push('jspsych-survey-mushra-horizontal');
@@ -371,7 +363,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
 
       html += '<div id="jspsych-'+audio_id+'" class="'+question_classes.join(' ')+'"  data-name="'+audio.raw_audio_name+'">';
 
-      // add question text: default "ver [i]"
       var pretty_i = i+1
       html += '<p class="jspsych-survey-mushra-text survey-mushra">' + '<b>Feedback: '+ pretty_i+ '</b> '
       html += '</p>';
@@ -447,7 +438,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
       var audio = trial.audios[audio_order[i]];
       var audio_id = audio_order[i];
 
-      // create question container
       var question_classes = ['jspsych-survey-mushra-question'];
       if (audio.horizontal) {
         question_classes.push('jspsych-survey-mushra-horizontal');
@@ -455,7 +445,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
 
       html += '<div id="jspsych-survey-mushra-'+audio_id+'" class="'+question_classes.join(' ')+'"  data-name="'+audio.raw_audio_name+'">';
 
-      // add question text: default "ver [i]"
       var pretty_i = i+1
       html += '<p class="jspsych-survey-mushra-text survey-mushra">' + '<b>Feedback: '+ pretty_i+ '</b>'
       if(audio.required){
@@ -542,10 +531,10 @@ jsPsych.plugins['survey-mushra'] = (function() {
       html += 'Feedback ' + trial.options_sim[i];
       html += '</label>';
 
-      html += '</div>';   // close question div
-      html += '</div>';   // close column
+      html += '</div>';
+      html += '</div>';
     }
-    html += '</div>';     // close row
+    html += '</div>';
     html += '</div>';
     html += '</div>';
 
@@ -585,7 +574,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
       var audio = trial.audios[audio_order[i]];
       var audio_id = audio_order[i];
 
-      // create question container
       var question_classes = ['jspsych-survey-mushra-question'];
       if (audio.horizontal) {
         question_classes.push('jspsych-survey-mushra-horizontal');
@@ -593,7 +581,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
 
       html += '<div id="jspsych-survey-mushra-energy-'+audio_id+'" class="'+question_classes.join(' ')+'"  data-name="'+audio.raw_audio_name+'">';
 
-      // add question text: default "ver [i]"
       var pretty_i = i+1
       html += '<p class="jspsych-survey-mushra-text survey-mushra">' + '<b>Feedback: '+ pretty_i+ '</b>'
       if(audio.required){
@@ -659,7 +646,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
       var audio = trial.audios[audio_order[i]];
       var audio_id = audio_order[i];
 
-      // create question container
       var question_classes = ['jspsych-survey-mushra-question'];
       if (audio.horizontal) {
         question_classes.push('jspsych-survey-mushra-horizontal');
@@ -667,7 +653,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
 
       html += '<div id="jspsych-survey-mushra-polarity-'+audio_id+'" class="'+question_classes.join(' ')+'"  data-name="'+audio.raw_audio_name+'">';
 
-      // add question text: default "ver [i]"
       var pretty_i = i+1
       html += '<p class="jspsych-survey-mushra-text survey-mushra">' + '<b>Feedback: '+ pretty_i+ '</b>'
       if(audio.required){
@@ -736,7 +721,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
       var audio = trial.audios[audio_order[i]];
       var audio_id = audio_order[i];
 
-      // create question container
       var question_classes = ['jspsych-survey-mushra-question'];
       if (audio.horizontal) {
         question_classes.push('jspsych-survey-mushra-horizontal');
@@ -744,7 +728,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
 
       html += '<div id="jspsych-survey-mushra-surprisal-'+audio_id+'" class="'+question_classes.join(' ')+'"  data-name="'+audio.raw_audio_name+'">';
 
-      // add question text: default "ver [i]"
       var pretty_i = i+1
       html += '<p class="jspsych-survey-mushra-text survey-mushra">' + '<b>Feedback: '+ pretty_i+ '</b>'
       if(audio.required){
@@ -818,7 +801,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
     for (var i = 0; i < trial.audios.length; i++) {
       document.querySelectorAll('.play-btn-here-' + i).forEach(x => {
         x.addEventListener("click", (event) => {
-          // event.preventDefault();
           var data_class = event.target.getAttribute("data-class");
           clicked_play_buttons.add(data_class);
           var model_i = data_class.slice(-1);
@@ -864,9 +846,7 @@ jsPsych.plugins['survey-mushra'] = (function() {
       clicked_play_buttons.add(event.target.getAttribute("id"));
     });
 
-    // var y = document.getElementById("jspsych-survey-mushra-next-submit")
     document.querySelector('form').addEventListener('submit', (event) => {
-    // y.addEventListener("click", function(event) {
       event.preventDefault();
 
       // measure response time
@@ -877,7 +857,7 @@ jsPsych.plugins['survey-mushra'] = (function() {
       // Listen to all
       const total_required_audios = trial.audios.length + 1; 
 
-      // 2. Check if all required audios have been played
+      // Check if all required audios have been played
       if (clicked_play_buttons.size < total_required_audios) {
           window.alert("Please listen to the context audio and all comparison audios before continuing.");
           return;
@@ -892,7 +872,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
           var val = match.querySelector("input[type=radio]:checked").value;
         } else {
           window.alert("You must choose all options.")
-          // return;
           var val = "";
         }
         var obje = {};
@@ -901,7 +880,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
         Object.assign(response_data, obje);
       }
 
-      // create object to hold new responses --by Shivam
       let response_new = {};
       for(var i=0; i<trial.audios.length; i++){
         var match = display_element.querySelector('#jspsych-survey-mushra-'+i);
@@ -910,7 +888,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
           var val = match.querySelector("input[type=radio]:checked").value;
         } else {
           window.alert("You must choose all options.")
-          // return;
           var val = "";
         }
         var obje = {};
@@ -925,7 +902,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
         var best = match.querySelector("input[type=radio]:checked").value;
       } else {
         window.alert("must choose all options")
-        // return;
         var best = "";
       }
 
@@ -942,7 +918,6 @@ jsPsych.plugins['survey-mushra'] = (function() {
             var val = match.querySelector("input[type=radio]:checked").value;
           } else {
             window.alert("You must choose all options.")
-            // return;
             var val = "";
           }
           obje[a] = val;

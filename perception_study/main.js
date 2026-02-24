@@ -111,7 +111,6 @@ const data_folder = "triad2";
 const attention_folder = "attention";
 const file_names = ["context.wav", "data.json", "fb0.wav", "fb1.wav", "fb2.wav"];
 
-// NOTE copy file names manually
 const attention_check_options_raw = [
   "attn1", "attn2"
 ];
@@ -598,30 +597,6 @@ async function getTranscript(url) {
 }
 
 (async () => {
-  const counts = {
-  0: 1,
-  1: 3,
-  2: 1,
-  3: 2,
-  4: 4,
-  5: 2,
-  6: 2,
-  7: 2,
-  8: 2,
-  9: 2,
-  10: 7,
-  11: 2,
-  12: 5,
-  13: 2,
-  14: 3,
-  15: 2,
-  16: 2,
-  17: 1,
-  18: 5,
-  19: 5
-};
-
-
 
 const num_attention_checks = attention_check_options_raw.length; // 2
 const num_files = 21;
@@ -681,7 +656,7 @@ jsPsych.data.addProperties({
 
 /*****************
  *****************
-    End Proflic Information
+    End Prolific Information
  *****************
 ******************/
 
@@ -702,7 +677,6 @@ const inital_confirm_headphones = {
     type: 'html-button-response',
     stimulus: '<h2> Are you using headphones right now? </h2>',
     choices: ['Yes', 'No'],
-    // button_html: ['<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 48%; transform: translateY(-50%);">%choice%</button>', '<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 52%; transform: translateY(-50%);">%choice%</button>'],
     prompt: ""
 };
 
@@ -710,15 +684,6 @@ const confirm_headphones = {
     type: 'html-button-response',
     stimulus: '<h2> Were you wearing <b> headphones </b> for the <b>entire duration </b> of this test? </h2>',
     choices: ['Yes', 'No'],
-    // button_html: ['<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 48%; transform: translateY(-50%);">%choice%</button>', '<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 52%; transform: translateY(-50%);">%choice%</button>'],
-    prompt: ""
-};
-
-const hearing_impairment = {
-    type: 'html-button-response',
-    stimulus: '<h2> Do you have any known hearing impairments?</h2>',
-    choices: ['Yes', 'No'],
-    // button_html: ['<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 48%; transform: translateY(-50%);">%choice%</button>', '<button class="jspsych-btn" style = "position: absolute; top: 60%; -ms-transform: translateY(-50%); left: 52%; transform: translateY(-50%);">%choice%</button>'],
     prompt: ""
 };
 
@@ -1483,7 +1448,6 @@ jsPsych.init({
   show_progress_bar: true,
   on_finish() {
     window.location.href = "https://app.prolific.com/submissions/complete?cc=CJN86A8G"
-    //jsPsych.data.displayData();
   }
 });
 })();

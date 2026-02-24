@@ -1,5 +1,4 @@
 import argparse
-from peft import PeftModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
 from tqdm import tqdm
@@ -49,18 +48,11 @@ def create_embeddings(args, input_file: str, output_file: str) -> None:
     MODEL_PATH = args.model
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
     
-    bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16,
-                         bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True)
-    
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
         dtype=torch.bfloat16,
         device_map="auto",
-        # quantization_config=bnb
     )
-
-    # Load the LoRA adapter
-    # model = PeftModel.from_pretrained(model, MODEL_PATH)
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
     print(f"Running on device: {device}")

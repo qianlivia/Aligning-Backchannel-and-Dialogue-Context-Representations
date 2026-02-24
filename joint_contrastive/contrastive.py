@@ -418,6 +418,7 @@ def parse_arguments():
         choices=[
             "bc_matched_gte",  # GTE baseline
             
+            # Fine-tuned LLM embeddings
             "llama3.1-8b-best_embeddings_1turns",
             "mistral-7b-v0.3-best_embeddings_1turns",
             "qwen2.5-7b-best_embeddings_1turns",

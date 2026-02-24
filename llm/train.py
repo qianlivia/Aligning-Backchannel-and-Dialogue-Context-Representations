@@ -17,7 +17,8 @@ from tqdm import tqdm
 TRAIN_DATA_FILE = "llm/data/lm_train.txt"
 TEST_DATA_FILE  = "llm/data/lm_test.txt"
 
-EPOCHS    = 10          # max epochs; early stopping will usually stop earlier
+# NOTE: we trained for 1 epoch for the paper without hyperparameter tuning, but the code supports more epochs and early stopping based on validation loss. You can increase EPOCHS and adjust PATIENCE/MIN_DELTA to allow for more training if desired.
+EPOCHS    = 10          # max epochs; early stopping will usually stop earlier. 
 LR        = 2e-4
 LORA_R, LORA_ALPHA, LORA_DROPOUT = 32, 64, 0.05
 
@@ -29,14 +30,6 @@ device = accelerator.device
 
 # Per-model config, tuned for a 3090 with 4-bit QLoRA
 MODEL_CONFIGS = [
-    { # Not used
-        "name": "gemma2-9b",
-        "model_id": "google/gemma-2-9b",
-        "output_prefix": "gemma2-9b",
-        "max_len": 1024,
-        "batch": 2,
-        "grad_acc": 16,
-    },
     {
         "name": "llama3.1-8b",
         "model_id": "meta-llama/Llama-3.1-8B",
@@ -53,26 +46,10 @@ MODEL_CONFIGS = [
         "batch": 2,
         "grad_acc": 8,
     },
-    { # Not used
-        "name": "gemma3-12b",
-        "model_id": "google/gemma-3-12b-pt",
-        "output_prefix": "gemma3-12b",
-        "max_len": 1024,
-        "batch": 1,
-        "grad_acc": 16,
-    },
     {
         "name": "qwen2.5-7b",
         "model_id": "Qwen/Qwen2.5-7B",
         "output_prefix": "qwen2.5-7b",
-        "max_len": 1024,
-        "batch": 2,
-        "grad_acc": 16,
-    },
-    { # Not used
-        "name": "llama-3.2-3b",
-        "model_id": "meta-llama/Llama-3.2-3B",
-        "output_prefix": "llama3.2-3b",
         "max_len": 1024,
         "batch": 2,
         "grad_acc": 16,
@@ -132,7 +109,7 @@ def validate_model(model, test_dataloader):
             disable=not accelerator.is_main_process
         ):
             outputs = model(**batch)
-            loss = outputs.loss                  # mean over non-ignored tokens
+            loss = outputs.loss                   # mean over non-ignored tokens
             labels = batch["labels"]
             token_count = (labels != -100).sum()  # tensor
 
