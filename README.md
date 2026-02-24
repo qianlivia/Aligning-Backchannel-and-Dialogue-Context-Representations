@@ -19,8 +19,9 @@
 
 - **joint_contrastive/contrastive.py**: Fine-tuning the joint model.
 - **joint_contrastive/sweep_contrastive.py**: Parallelized hyperparameter tuning.
-- _joint_contrastive/bc_matched_gte.pkl_: Pickle file containing the GTE embeddings of the contexts, as well as the WavLM embeddings of the contexts and backchannels. Used as a baseline. NOTE: Only the GTE baseline's embeddings are stored in this repository. Embeddings extracted from the LLMs should be structured in the same way.
+- _joint_contrastive/extracted_embeddings/bc_matched_gte.pkl_: Pickle file containing the GTE embeddings of the contexts, as well as the WavLM embeddings of the contexts and backchannels. Used as a baseline. NOTE: Only the GTE baseline's embeddings are stored in this repository. Embeddings extracted from the LLMs should be structured in the same way.
 - _joint_contrastive/train_val_test_indices_sets.pkl_: training, validation and test splits, based on the names of the embeddings stored in the pickle file mentioned above.
+- _joint_contrastive/bc_fica_wavlm.pkl_: WavLM embeddings of FiCa audio.
 
 ## 4. Perception study
 
