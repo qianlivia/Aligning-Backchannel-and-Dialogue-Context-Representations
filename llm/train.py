@@ -255,7 +255,7 @@ def train_one_model(
                 best_val_loss = val_loss
                 patience_counter = 0
 
-                best_dir = f"{output_prefix}-best"
+                best_dir = f"{output_prefix}-fisher"
                 os.makedirs(best_dir, exist_ok=True)
                 accelerator.unwrap_model(model).save_pretrained(best_dir)
                 tokenizer.save_pretrained(best_dir)

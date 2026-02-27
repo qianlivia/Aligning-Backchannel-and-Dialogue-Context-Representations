@@ -419,19 +419,19 @@ def parse_arguments():
             "bc_matched_gte",  # GTE baseline
             
             # Fine-tuned LLM embeddings
-            "llama3.1-8b-best_embeddings_1turns",
-            "mistral-7b-v0.3-best_embeddings_1turns",
-            "qwen2.5-7b-best_embeddings_1turns",
+            "llama3.1-8b-fisher_embeddings_1turns",
+            "mistral-7b-v0.3-fisher_embeddings_1turns",
+            "qwen2.5-7b-fisher_embeddings_1turns",
             "gemma3-4b-bc-split-1_embeddings_1turns",
             
-            "llama3.1-8b-best_embeddings_3turns",
-            "mistral-7b-v0.3-best_embeddings_3turns",
-            "qwen2.5-7b-best_embeddings_3turns",
+            "llama3.1-8b-fisher_embeddings_3turns",
+            "mistral-7b-v0.3-fisher_embeddings_3turns",
+            "qwen2.5-7b-fisher_embeddings_3turns",
             "gemma3-4b-bc-split-1_embeddings_3turns",
             
-            "llama3.1-8b-best_embeddings_5turns",
-            "mistral-7b-v0.3-best_embeddings_5turns",
-            "qwen2.5-7b-best_embeddings_5turns",
+            "llama3.1-8b-fisher_embeddings_5turns",
+            "mistral-7b-v0.3-fisher_embeddings_5turns",
+            "qwen2.5-7b-fisher_embeddings_5turns",
             "gemma3-4b-bc-split-1_embeddings_5turns",
             
             # Pre-trained LLM embeddings

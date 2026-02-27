@@ -5,16 +5,18 @@ from tqdm import tqdm
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", type=str, default="llama3.1-8b-best", help="Model name or path", choices=[
-    "llama3.1-8b-best",
-    "mistral-7b-v0.3-best",
-    "qwen2.5-7b-best",
-    "gemma3-4b-bc-split-1",
+parser.add_argument("--model", type=str, default="liviaq/llama3.1-8b-fisher", help="Model name or path", choices=[
+    # Fine-tuned models
+    "liviaq/gemma3-4b-fisher",
+    "liviaq/llama3.1-8b-fisher",
+    "liviaq/qwen2.5-7b-fisher",
+    "liviaq/mistral-7b-v0.3-fisher",
     
-    "meta-llama/Llama-3.1-8B",
-    "mistralai/Mistral-7B-v0.3",
-    "Qwen/Qwen2.5-7B",
+    # Base models
     "google/gemma-3-4b-pt",
+    "meta-llama/Llama-3.1-8B",
+    "Qwen/Qwen2.5-7B",
+    "mistralai/Mistral-7B-v0.3",
     ])
 parser.add_argument("--num", type=int, default=20, help="Number of past turns to use")
 args = parser.parse_args()

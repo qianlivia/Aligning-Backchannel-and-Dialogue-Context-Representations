@@ -5,36 +5,52 @@ from tqdm import tqdm
 import pickle
 from pathlib import Path
 
-# mapping = [
-#     "file",
-#     "name",
-#     "start",
-#     "end",
-#     "channel",
-#     "sex",
-#     "embedding",
-#     "emb_mean",
-#     "bc",
-#     "context",
-#     "context_text",
-#     "context_embedding",
-#     "context_acoustic",
-#     "context_gte_all",
-#     "context_gte_last",
-# ]
+"""
+Structure of each data point in the input pickle file (bc_matched_gte.pkl):
+
+file: file path (can be ignored)
+name: file name
+start: current backchannel's start time
+end: current backchannel's end time
+channel: backchannel channel (0 or 1)
+sex: 'M' or 'F'
+emb_mean: 
+bc: written form of the backchannel (e.g. "right", "yeah", "uh-huh")
+context: list of context turns preceding the current backchannel, where each turn is a dict with keys:
+    speaker: 'A' or 'B'
+    words: list of words in the turn, where each word is a dict with keys:
+        word: the word text
+        start: word start time
+        end: word end time
+    initial_overlap: (optional) list of words in the initial overlap, same format as words
+    final_overlap: (optional) list of words in the final overlap, same format as words
+    start: turn start time
+    end: turn end time
+context_acoustic: WavLM embedding of the last second of the context preceding the current backchannel (1024-dimensional vector)
+context_gte_all: mean-pooled hidden state embeddings from the GTE model for all context turns (1 x 1 x 1024-dimensional tensor)
+context_gte_last: last hidden layer embedding from the GTE model for the context turns (1 x 1 x 1024-dimensional vector)
+context_embedding: (placeholder) the embedding vector extracted from the fine-tuned Gemma LLM for the context turns; this is what we will be replacing with the embedding from the new LLM in this script
+
+Keys created/modified by this script:
+
+context_text: the continuous text representation of the context turns (the length of which is determined by argument: num_past_turns), formatted for input to the language model
+context_embedding: the embedding vector extracted from the language model (argument: model) for the context turns
+"""
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="llama3.1-8b-best", help="Model name or path", choices=[
-        "gemma3-4b-bc-split-1",
-        "llama3.1-8b-best",
-        "qwen2.5-7b-best",
-        "mistral-7b-v0.3-best",
+    parser.add_argument("--model", type=str, default="liviaq/llama3.1-8b-fisher", help="Model name or path", choices=[
+        # Fine-tuned models
+        "liviaq/gemma3-4b-fisher",
+        "liviaq/llama3.1-8b-fisher",
+        "liviaq/qwen2.5-7b-fisher",
+        "liviaq/mistral-7b-v0.3-fisher",
         
-        "meta-llama/Llama-3.1-8B",
-        "mistralai/Mistral-7B-v0.3",
-        "Qwen/Qwen2.5-7B",
+        # Base models
         "google/gemma-3-4b-pt",
+        "meta-llama/Llama-3.1-8B",
+        "Qwen/Qwen2.5-7B",
+        "mistralai/Mistral-7B-v0.3",
         ])
     parser.add_argument("--num_past_turns", type=int, default=5, choices = [1, 3, 5],
                         help="Number of past turns to include in context")

@@ -25,9 +25,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 NUM_TURNS = 5 # NOTE: Change this to match the number of turns in your data files
 DATA_FILENAMES = [
-    f"llama3.1-8b-best_embeddings_{NUM_TURNS}turns",
-    f"mistral-7b-v0.3-best_embeddings_{NUM_TURNS}turns",
-    f"qwen2.5-7b-best_embeddings_{NUM_TURNS}turns",
+    f"llama3.1-8b-fisher_embeddings_{NUM_TURNS}turns",
+    f"mistral-7b-v0.3-fisher_embeddings_{NUM_TURNS}turns",
+    f"qwen2.5-7b-fisher_embeddings_{NUM_TURNS}turns",
     f"gemma3-4b-bc-split-1_embeddings_{NUM_TURNS}turns",
     
     "google/gemma-3-4b-pt_embeddings_5turns",

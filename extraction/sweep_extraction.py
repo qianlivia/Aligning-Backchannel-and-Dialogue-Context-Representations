@@ -11,15 +11,17 @@ TARGET_SCRIPT = "extraction/extract_embeddings.py"
 
 # Argument choices
 models = [
-    "gemma3-4b-bc-split-1",
-    "llama3.1-8b-best",
-    "mistral-7b-v0.3-best",
-    "qwen2.5-7b-best",
+    # Fine-tuned models
+    "liviaq/gemma3-4b-fisher",
+    "liviaq/llama3.1-8b-fisher",
+    "liviaq/qwen2.5-7b-fisher",
+    "liviaq/mistral-7b-v0.3-fisher",
     
-    "meta-llama/Llama-3.1-8B",
-    "mistralai/Mistral-7B-v0.3",
-    "Qwen/Qwen2.5-7B",
+    # Base models
     "google/gemma-3-4b-pt",
+    "meta-llama/Llama-3.1-8B",
+    "Qwen/Qwen2.5-7B",
+    "mistralai/Mistral-7B-v0.3",
 ]
 
 past_turns_options = [1, 3, 5]
