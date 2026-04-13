@@ -26,6 +26,7 @@
 
 ## 4. Perception study
 
+- _perception_study_data/_: Folder containing the data used for our perception study.
 - _joint_contrastive/triad2_results.csv_: Results of the perception study.
 - _joint_contrastive/fica_unanimous.txt_: Results of the perception study from _Qian, L., Figueroa, C. & Skantze, G. (2025). Representation of perceived prosodic similarity of conversational feedback. In: Interspeech 2025_. Used for the **FiCa prosodic backchannel similarity task**.
 
