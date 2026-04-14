@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Backchannel Embeddings Demo</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem 1.5rem 2rem;
+      background: #f5f5f7;
+
+      /* NEW: constrain total page width */
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.25rem;
+    }
+    .subtitle {
+      margin-top: 0;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+    }
+    .control-group label {
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+    select {
+      padding: 0.3rem 0.4rem;
+      border-radius: 0.4rem;
+      border: 1px solid #ccc;
+      min-width: 8rem;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    #status {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    #plot {
+      width: 100%;
+
+      /* NEW: make plot area square (equal width/height) */
+      aspect-ratio: 1 / 1;
+
+      /* Keep it responsive while respecting the page max width */
+      max-width: 1000px;
+
+      /* Override previous fixed height */
+      height: auto;
+
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* NEW: download button styling */
+    .btn {
+      padding: 0.45rem 0.7rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* NEW: two-column layout (plot left, popup right) */
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* NEW: selection popup */
+    .panel {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 0.75rem 0.9rem;
+    }
+    .panel h2 {
+      font-size: 0.95rem;
+      margin: 0 0 0.5rem 0;
+    }
+    .panel .muted {
+      color: #666;
+      font-size: 0.85rem;
+      margin: 0;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.35rem 0.75rem;
+      align-items: baseline;
+      margin-top: 0.6rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .kv .k {
+      color: #444;
+      font-size: 0.85rem;
+    }
+    .kv .v {
+      font-weight: 650;
+      font-size: 0.9rem;
+    }
+
+    /* CHANGED: wrapper scrolls; children have fixed heights */
+    #spectrogram {
+      width: 100%;
+      height: 240px; /* waveform (120) + spectrogram (120) */
+      margin-top: 0.75rem;
+      border: 1px solid #eee;
+      border-radius: 0.5rem;
+      background: #fff;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 6px 0; /* a little breathing room */
+    }
+
+    /* NEW: separate containers */
+    #waveform {
+      height: 120px;
+    }
+    #spectrogram-canvas {
+      height: 120px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Backchannel Embeddings Explorer</h1>
+  <p class="subtitle">
+    Choose dimensions for the axes, click legend labels to filter, and click points to play the audio.
+  </p>
+
+  <div class="controls">
+    <!-- NEW: dataset filter -->
+    <div class="control-group">
+      <label for="dataset">Dataset</label>
+      <select id="dataset"></select>
+    </div>
+
+    <div class="control-group">
+      <label for="x-dim">X axis</label>
+      <select id="x-dim"></select>
+    </div>
+    <div class="control-group">
+      <label for="y-dim">Y axis</label>
+      <select id="y-dim"></select>
+    </div>
+    <!-- NEW: download button -->
+    <button id="download-pdf" class="btn" type="button" disabled>Download PNG</button>
+
+    <div id="status">Loading CSV…</div>
+  </div>
+
+  <!-- NEW: main area with plot + popup -->
+  <div class="main">
+    <div id="plot"></div>
+
+    <aside id="selection-panel" class="panel" hidden>
+      <h2>Selection summary</h2>
+      <p id="selection-meta" class="muted">Select points (box/lasso) to see averages.</p>
+
+      <!-- CHANGED: two stacked render targets inside the scroll viewport -->
+      <div id="spectrogram" aria-label="Spectrogram preview">
+        <div id="waveform" aria-label="Waveform"></div>
+        <div id="spectrogram-canvas" aria-label="Spectrogram"></div>
+      </div>
+
+      <div class="wave-controls">
+        <button id="wave-play" class="btn" type="button" disabled>Play</button>
+        <button id="wave-stop" class="btn" type="button" disabled>Stop</button>
+      </div>
+      <div id="wave-file" class="wave-meta">Click a point to load audio…</div>
+
+      <div class="kv" aria-live="polite">
+        <div class="k">Length (voiced frames)</div><div class="v" id="avg-pitch-length">—</div>
+        <div class="k">Pitch range (semitones)</div><div class="v" id="avg-pitch-range">—</div>
+        <div class="k">Pitch mean (semitones)</div><div class="v" id="avg-pitch-mean">—</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hidden audio element used for playback -->
+  <audio id="audio-player"></audio>
+
+  <script type="module">
+    import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+    import SpectrogramPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js'
+    //import SpectrogramPlugin from 'https://raw.githubusercontent.com/danijel3/wavesurfer-spectrogram-emu/refs/heads/main/dist/plugins/spectrogram_emu.esm.js'
+
+    // TODO: change this URL to wherever your CSV lives
+    const CSV_URL = 'data.csv';
+
+    let rows = [];         // Array of row objects: {file, label, dataset, dim_PCA1, ...}
+    let dimColumns = [];   // ["dim_PCA1", "dim_PCA2", ...]
+    const datasetSelect = document.getElementById('dataset'); // NEW
+    const xSelect = document.getElementById('x-dim');
+    const ySelect = document.getElementById('y-dim');
+    const statusEl = document.getElementById('status');
+    const audioEl = document.getElementById('audio-player');
+    const plotDiv = document.getElementById('plot');
+    const downloadBtn = document.getElementById('download-pdf');
+
+    // NEW: selection popup elements
+    const selectionPanel = document.getElementById('selection-panel');
+    const selectionMeta = document.getElementById('selection-meta');
+    const avgPitchLengthEl = document.getElementById('avg-pitch-length');
+    const avgPitchRangeEl = document.getElementById('avg-pitch-range');
+    const avgPitchMeanEl = document.getElementById('avg-pitch-mean');
+
+    // Track current plot state
+    let lastLayout = {};
+
+    // Simple CSV parser assuming no quoted commas.
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length === 0) return [];
+
+      const headers = lines[0].split(',').map(h => h.trim());
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const cols = line.split(',');
+        const obj = {};
+        headers.forEach((h, idx) => {
+          obj[h] = cols[idx] !== undefined ? cols[idx].trim() : '';
+        });
+        result.push(obj);
+      }
+      return { headers, rows: result };
+    }
+
+    function populateDimensionDropdowns(headers) {
+      dimColumns = headers.filter(h => h.startsWith('dim_'));
+
+      // Clear
+      xSelect.innerHTML = '';
+      ySelect.innerHTML = '';
+
+      dimColumns.forEach(col => {
+        const label = col.replace(/^dim_/, '');
+
+        const optX = document.createElement('option');
+        optX.value = col;
+        optX.textContent = label;
+        xSelect.appendChild(optX);
+
+        const optY = document.createElement('option');
+        optY.value = col;
+        optY.textContent = label;
+        ySelect.appendChild(optY);
+      });
+
+      // Choose sensible defaults if available
+      const defaultX = dimColumns[0];
+      const defaultY = dimColumns[1];
+
+      xSelect.value = defaultX;
+      ySelect.value = defaultY;
+    }
+
+    // NEW: dataset dropdown population
+    function populateDatasetDropdown() {
+      datasetSelect.innerHTML = '';
+
+      const datasets = new Set();
+      rows.forEach(r => {
+        const d = (r.dataset ?? '').trim();
+        if (d) datasets.add(d);
+      });
+
+      Array.from(datasets).sort().forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        datasetSelect.appendChild(opt);
+      });
+
+      // pick first dataset (no "All" option)
+      datasetSelect.value = datasetSelect.options[0]?.value ?? '';
+    }
+
+    // NEW: global label analysis + stable color scheme across datasets
+    const labelInfoByDataset = new Map(); // dataset -> Set<label>
+    let globalLabelOrder = [];            // union of labels across datasets (stable order)
+    let labelColorMap = new Map();        // label -> CSS color
+
+    // CHANGED: bigger, more distinguishable palette (Plotly "Light24")
+    const BASE_PALETTE = [
+      '#FD3216', '#00FE35', '#6A76FC', '#FED4C4', '#FE00CE', '#0DF9FF',
+      '#F6F926', '#FF9616', '#479B55', '#EEA6FB', '#DC587D', '#D626FF',
+      '#6E899C', '#00B5F7', '#B68E00', '#C9FBE5', '#FF0092', '#22FFA7',
+      '#E3EE9E', '#86CE00', '#BC7196', '#7E7DCD', '#FC6955', '#E48F72'
+    ];
+
+    function hslFallbackColor(i) {
+      const hue = (i * 137.508) % 360; // golden-angle spacing
+      return `hsl(${hue} 65% 45%)`;
+    }
+
+    function analyzeLabelsAcrossDatasets(allRows) {
+      labelInfoByDataset.clear();
+
+      for (const r of allRows) {
+        const ds = (r.dataset ?? '').trim();
+        const label = (r.label ?? 'unknown').trim() || 'unknown';
+        if (!ds) continue;
+        if (!labelInfoByDataset.has(ds)) labelInfoByDataset.set(ds, new Set());
+        labelInfoByDataset.get(ds).add(label);
+      }
+
+      const union = new Set();
+      for (const set of labelInfoByDataset.values()) {
+        for (const label of set) union.add(label);
+      }
+      globalLabelOrder = Array.from(union).sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true })
+      );
+
+      labelColorMap = new Map();
+      globalLabelOrder.forEach((label, idx) => {
+        const color = BASE_PALETTE[idx % BASE_PALETTE.length] ?? hslFallbackColor(idx);
+        labelColorMap.set(label, color);
+      });
+
+      // Optional: expose a quick summary in console
+      console.info('Datasets found:', Array.from(labelInfoByDataset.keys()).sort());
+      console.info('Global label union size:', globalLabelOrder.length);
+      for (const [ds, set] of labelInfoByDataset.entries()) {
+        console.info(`Labels in ${ds} (${set.size}):`, Array.from(set).sort());
+      }
+    }
+
+    function buildTracesForRows(filteredRows, xDim, yDim) {
+      const labelGroups = new Map();
+
+      filteredRows.forEach((row, rowIdx) => {
+        const label = row.label || 'unknown';
+        if (!labelGroups.has(label)) {
+          labelGroups.set(label, { x: [], y: [], text: [], customdata: [] });
+        }
+        const group = labelGroups.get(label);
+        const xVal = parseFloat(row[xDim]);
+        const yVal = parseFloat(row[yDim]);
+
+        if (!Number.isNaN(xVal) && !Number.isNaN(yVal)) {
+          group.x.push(xVal);
+          group.y.push(yVal);
+          group.text.push(row.file || '');
+          group.customdata.push({ file: (row.file || ''), rowIndex: rowIdx });
+        }
+      });
+
+      // NEW: keep trace order stable across datasets (and across re-renders)
+      const sortedLabels = Array.from(labelGroups.keys()).sort((a, b) => {
+        const ia = globalLabelOrder.indexOf(a);
+        const ib = globalLabelOrder.indexOf(b);
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      const traces = [];
+      for (const label of sortedLabels) {
+        const g = labelGroups.get(label);
+        const color = labelColorMap.get(label) || '#444';
+
+        traces.push({
+          x: g.x,
+          y: g.y,
+          text: g.text,
+          customdata: g.customdata,
+          mode: 'markers',
+          type: 'scattergl',
+          name: label,
+          hovertemplate: (
+            'Label: ' + label +
+            '<br>File: %{text}<br>' +
+            xDim.replace(/^dim_/, '') + ': %{x:.3f}<br>' +
+            yDim.replace(/^dim_/, '') + ': %{y:.3f}<extra></extra>'
+          ),
+          marker: { size: 9, opacity: 0.85, color }
+        });
+      }
+      return traces;
+    }
+
+    function baseLayoutForDims(xDim, yDim) {
+      return {
+        margin: { l: 55, r: 20, t: 35, b: 45 },
+        xaxis: { title: xDim.replace(/^dim_/, '') },
+        yaxis: { title: yDim.replace(/^dim_/, '') },
+        legend: { orientation: 'h', x: 0, y: -0.18, xanchor: 'left', yanchor: 'top' },
+        hovermode: 'closest'
+      };
+    }
+
+    function getVisibleTracesFromPlot() {
+      const data = plotDiv?.data || [];
+      return data.filter(t => t && t.visible !== 'legendonly' && t.visible !== false);
+    }
+
+    function safeName(s, fallback) {
+      return (s ?? fallback).toString().replace(/[^\w.-]+/g, '_');
+    }
+
+    async function downloadCurrentViewAsPNG() {
+      const exportTraces = getVisibleTracesFromPlot();
+      if (!exportTraces.length) return;
+
+      downloadBtn.disabled = true;
+      const prevStatus = statusEl.textContent;
+      statusEl.textContent = 'Exporting PNG…';
+
+      try {
+        const exportLayout = {
+          ...lastLayout,
+
+          // export-only: larger fonts, fixed size
+          font: { ...(lastLayout.font || {}), size: 20 },
+          xaxis: {
+            ...(lastLayout.xaxis || {}),
+            title: { ...(lastLayout.xaxis?.title || {}), font: { size: 22 } },
+            tickfont: { size: 18 }
+          },
+          yaxis: {
+            ...(lastLayout.yaxis || {}),
+            title: { ...(lastLayout.yaxis?.title || {}), font: { size: 22 } },
+            tickfont: { size: 18 }
+          },
+
+          autosize: false,
+          width: 900,
+          height: 900,
+          margin: { l: 55, r: 20, t: 35, b: 90 },
+          legend: {
+            ...(lastLayout.legend || {}),
+            orientation: 'h',
+            x: 0,
+            y: -0.18,
+            xanchor: 'left',
+            yanchor: 'top',
+            font: { size: 18 }
+          }
+        };
+
+        const tmp = document.createElement('div');
+        tmp.style.position = 'fixed';
+        tmp.style.left = '-10000px';
+        tmp.style.top = '0';
+        tmp.style.width = exportLayout.width + 'px';
+        tmp.style.height = exportLayout.height + 'px';
+        document.body.appendChild(tmp);
+
+        await Plotly.newPlot(tmp, exportTraces, exportLayout, { staticPlot: true, responsive: false });
+
+        const dataUrl = await Plotly.toImage(tmp, {
+          format: 'png',
+          width: exportLayout.width,
+          height: exportLayout.height
+        });
+
+        Plotly.purge(tmp);
+        tmp.remove();
+
+        const a = document.createElement('a');
+        const ds = safeName(datasetSelect.value, 'dataset');
+        const xName = safeName((xSelect.value || 'x').replace(/^dim_/, ''), 'x');
+        const yName = safeName((ySelect.value || 'y').replace(/^dim_/, ''), 'y');
+        a.href = dataUrl;
+        a.download = `embeddings_${ds}_${xName}_vs_${yName}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        statusEl.textContent = 'PNG downloaded.';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Export failed (check console).';
+      } finally {
+        setTimeout(() => { statusEl.textContent = prevStatus; }, 1200);
+        downloadBtn.disabled = false;
+      }
+    }
+
+
+    // NEW: selection-summary helpers
+    function setSelectionPanelVisible(visible) {
+      selectionPanel.hidden = !visible;
+    }
+
+    function fmtAvg(x) {
+      return Number.isFinite(x) ? x.toFixed(1) : '—';
+    }
+
+    function summarizeSelection(filteredRows, points) {
+      // points: Plotly selected points; each has .customdata {rowIndex,...}
+      const idxs = [];
+      for (const p of (points || [])) {
+        const ri = p?.customdata?.rowIndex;
+        if (Number.isInteger(ri) && ri >= 0 && ri < filteredRows.length) idxs.push(ri);
+      }
+      if (!idxs.length) return null;
+
+      let n = 0;
+      let sumLen = 0, sumRange = 0, sumMean = 0;
+
+      for (const ri of idxs) {
+        const r = filteredRows[ri];
+        const vLen = parseFloat(r.dim_pitch_length);
+        const vRange = parseFloat(r.dim_pitch_range);
+        const vMean = parseFloat(r.dim_pitch_mean);
+
+        // Only include rows where all three are present
+        if ([vLen, vRange, vMean].every(v => Number.isFinite(v))) {
+          n++;
+          sumLen += vLen;
+          sumRange += vRange;
+          sumMean += vMean;
+        }
+      }
+
+      if (!n) return { selected: idxs.length, used: 0, avgLen: NaN, avgRange: NaN, avgMean: NaN };
+      return { selected: idxs.length, used: n, avgLen: sumLen / n, avgRange: sumRange / n, avgMean: sumMean / n };
+    }
+
+    function renderPlot() {
+      if (!rows.length || !dimColumns.length) return;
+
+      const xDim = xSelect.value;
+      const yDim = ySelect.value;
+      const selectedDataset = (datasetSelect.value ?? '').trim();
+
+      const filteredRows = selectedDataset
+        ? rows.filter(r => ((r.dataset ?? '').trim() === selectedDataset))
+        : [];
+
+      const traces = buildTracesForRows(filteredRows, xDim, yDim);
+      const layout = baseLayoutForDims(xDim, yDim);
+
+      Plotly.newPlot(plotDiv, traces, layout, {
+        responsive: true,
+        // NEW: ensure selection tools are available
+        modeBarButtonsToAdd: ['select2d', 'lasso2d'],
+        displaylogo: false
+      });
+
+      // NEW: reset selection panel on redraw
+      setSelectionPanelVisible(false);
+      avgPitchLengthEl.textContent = '—';
+      avgPitchRangeEl.textContent = '—';
+      avgPitchMeanEl.textContent = '—';
+      selectionMeta.textContent = 'Select points (box/lasso) to see averages.';
+
+      plotDiv.on('plotly_click', (eventData) => {
+        const p = eventData?.points?.[0];
+        const filePath = p?.customdata?.file;
+        if (!filePath) return;
+
+        // Map clicked point back to the filtered row (rowIndex is within filteredRows)
+        const ri = p?.customdata?.rowIndex;
+        const clickedRow = (Number.isInteger(ri) && ri >= 0 && ri < filteredRows.length) ? filteredRows[ri] : null;
+
+        loadWaveform(filePath, clickedRow);
+      });
+
+      // NEW: selection handling
+      plotDiv.on('plotly_selected', (eventData) => {
+        const points = eventData?.points || [];
+        const summary = summarizeSelection(filteredRows, points);
+
+        if (!summary) {
+          setSelectionPanelVisible(false);
+          return;
+        }
+
+        setSelectionPanelVisible(true);
+        selectionMeta.textContent =
+          `Selected: ${summary.selected}.`;
+
+        avgPitchLengthEl.textContent = fmtAvg(summary.avgLen);
+        avgPitchRangeEl.textContent = fmtAvg(summary.avgRange);
+        avgPitchMeanEl.textContent = fmtAvg(summary.avgMean);
+      });
+
+      plotDiv.on('plotly_deselect', () => {
+        setSelectionPanelVisible(false);
+      });
+
+      lastLayout = layout;
+      downloadBtn.disabled = traces.length === 0;
+    }
+
+    // CHANGED: waveform -> spectrogram elements
+    const waveContainer = document.getElementById('waveform');
+    const spectrogramCanvas = document.getElementById('spectrogram-canvas');
+    const wavePlayBtn = document.getElementById('wave-play');
+    const waveStopBtn = document.getElementById('wave-stop');
+    const waveFileEl = document.getElementById('wave-file');
+    let waveSurfer = null;
+    let lastClickedFile = '';
+
+    // NEW: constant time scale (px/sec) derived from current panel width
+    let pxPerSecond = 0;
+    function computePxPerSecond() {
+      // "panel width corresponds to 1 second"
+      const w = Math.max(1, waveContainer.clientWidth || 1);
+      pxPerSecond = w / 2.0;
+      return pxPerSecond;
+    }
+
+    function fmtMaybe(x, digits = 1) {
+      const v = typeof x === 'number' ? x : parseFloat(x);
+      return Number.isFinite(v) ? v.toFixed(digits) : '—';
+    }
+
+    function updatePitchStatsFromRow(row) {
+      avgPitchLengthEl.textContent = fmtMaybe(row?.dim_pitch_length, 1);
+      avgPitchRangeEl.textContent  = fmtMaybe(row?.dim_pitch_range, 1);
+      avgPitchMeanEl.textContent   = fmtMaybe(row?.dim_pitch_mean, 1);
+    }
+
+    // NEW: decode once to get duration so we can set constant scale before rendering
+    const _audioDecodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+    async function getAudioDurationSeconds(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`Audio fetch failed: ${r.status} ${r.statusText}`);
+      const buf = await r.arrayBuffer();
+      const audioBuf = await _audioDecodeCtx.decodeAudioData(buf.slice(0));
+      return audioBuf.duration;
+    }
+
+    // NEW: fully teardown wavesurfer + plugin DOM to allow clean re-init each load
+    function destroyWaveSurfer() {
+      if (!waveSurfer) return;
+      try {
+        waveSurfer.destroy();
+      } catch (e) {
+        console.warn('WaveSurfer destroy failed:', e);
+      } finally {
+        waveSurfer = null;
+      }
+
+      // Clear any leftover canvases/DOM created by WaveSurfer + Spectrogram plugin
+      waveContainer.replaceChildren();
+      spectrogramCanvas.replaceChildren();
+
+      wavePlayBtn.disabled = true;
+      waveStopBtn.disabled = true;
+      wavePlayBtn.textContent = 'Play';
+    }
+
+    // CHANGED: always create a fresh WaveSurfer instance (spectrogram renders every time)
+    function ensureWaveSurfer() {
+      destroyWaveSurfer();
+
+      computePxPerSecond();
+
+      waveSurfer = WaveSurfer.create({
+        container: waveContainer,
+        height: 120,
+        cursorColor: '#111',
+        normalize: false,
+        waveColor: '#7a7a7a',
+        progressColor: '#111',
+        plugins: [
+          SpectrogramPlugin.create({
+            container: spectrogramCanvas,
+            labels: false,
+            height: 120,
+            frequencyMin: 50,
+            frequencyMax: 500,
+          })
+        ]
+      });
+
+      waveSurfer.on('ready', () => {
+        wavePlayBtn.disabled = false;
+        waveStopBtn.disabled = false;
+        wavePlayBtn.textContent = 'Pause';
+        waveContainer.scrollLeft = 0;
+      });
+
+      waveSurfer.on('play', () => { wavePlayBtn.textContent = 'Pause'; });
+      waveSurfer.on('pause', () => { wavePlayBtn.textContent = 'Play'; });
+      waveSurfer.on('finish', () => { wavePlayBtn.textContent = 'Play'; });
+
+      waveSurfer.on('error', (e) => {
+        console.error('WaveSurfer error:', e);
+        statusEl.textContent = 'Waveform failed to load (check console).';
+        if (lastClickedFile) {
+          audioEl.src = lastClickedFile;
+          audioEl.play().catch(() => {});
+        }
+      });
+
+      return waveSurfer;
+    }
+
+    async function loadWaveform(filePath, rowForStats) {
+      // (function name kept to avoid touching other call sites)
+      lastClickedFile = filePath;
+
+      setSelectionPanelVisible(true);
+      waveFileEl.textContent = filePath;
+      wavePlayBtn.disabled = true;
+      waveStopBtn.disabled = true;
+
+      // Fill in pitch stats for the clicked point (overrides selection averages)
+      if (rowForStats) {
+        selectionMeta.textContent = 'Clicked point.';
+        updatePitchStatsFromRow(rowForStats);
+      }
+
+      try {
+        // CHANGED: new instance per load
+        const ws = ensureWaveSurfer();
+
+        computePxPerSecond();
+        const duration = await getAudioDurationSeconds(filePath);
+        const targetWidthPx = Math.max(1, Math.round(duration * pxPerSecond));
+
+        ws.setOptions({ width: targetWidthPx });
+
+        ws.stop();
+        ws.load(filePath);
+
+        ws.once('ready', () => {
+          ws.play().catch?.(() => {});
+        });
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = 'Unable to load waveform (check console).';
+      }
+    }
+
+    wavePlayBtn.addEventListener('click', () => {
+      if (!waveSurfer) return;
+      waveSurfer.playPause();
+    });
+
+    waveStopBtn.addEventListener('click', () => {
+      if (!waveSurfer) return;
+      waveSurfer.stop();
+    });
+
+    // NEW: keep mapping stable on resize (recompute px/sec; next load uses new scale)
+    window.addEventListener('resize', () => {
+      computePxPerSecond();
+    });
+
+    function setupInteractions() {
+      datasetSelect.addEventListener('change', renderPlot);
+      xSelect.addEventListener('change', renderPlot);
+      ySelect.addEventListener('change', renderPlot);
+      downloadBtn.addEventListener('click', downloadCurrentViewAsPNG);
+    }
+
+    async function init() {
+      try {
+        statusEl.textContent = 'Loading CSV…';
+        const resp = await fetch(CSV_URL);
+        if (!resp.ok) throw new Error('Failed to fetch CSV: ' + resp.status + ' ' + resp.statusText);
+
+        const text = await resp.text();
+        const parsed = parseCSV(text);
+
+        rows = parsed.rows;
+        if (!rows.length) {
+          statusEl.textContent = 'No data rows found in CSV.';
+          return;
+        }
+
+        analyzeLabelsAcrossDatasets(rows);
+
+        populateDatasetDropdown();
+        populateDimensionDropdowns(parsed.headers);
+
+        renderPlot();
+
+        statusEl.textContent = 'Ready. Click points to play audio, use the legend to filter labels.';
+        downloadBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Error loading CSV: ' + err.message;
+        downloadBtn.disabled = true;
+      }
+    }
+
+    setupInteractions();
+    init();
+  </script>
+</body>
+</html>
