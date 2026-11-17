@@ -50,4 +50,28 @@
 
 ## Cite paper
 
-- TODO
+```
+Livia Qian and Gabriel Skantze. 2026. Aligning Backchannel and Dialogue Context Representations via Contrastive LLM Fine-Tuning. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 13817–13833, San Diego, California, United States. Association for Computational Linguistics.
+```
+
+```bibtex
+@inproceedings{qian-skantze-2026-aligning,
+    title = "Aligning Backchannel and Dialogue Context Representations via Contrastive {LLM} Fine-Tuning",
+    author = "Qian, Livia  and
+      Skantze, Gabriel",
+    editor = "Liakata, Maria  and
+      Moreira, Viviane P.  and
+      Zhang, Jiajun  and
+      Jurgens, David",
+    booktitle = "Proceedings of the 64th Annual Meeting of the {A}ssociation for {C}omputational {L}inguistics (Volume 1: Long Papers)",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.acl-long.629/",
+    doi = "10.18653/v1/2026.acl-long.629",
+    pages = "13817--13833",
+    ISBN = "979-8-89176-390-6",
+    abstract = "Backchannels (e.g., `yeah', `mhm', and `right') are short, non-interruptive feedback signals whose lexical form and prosody jointly convey pragmatic meaning. While prior computational research has largely focused on predicting backchannel timing, the relationship between lexico-prosodic form and meaning remains underexplored. We propose a two-stage framework: first, fine-tuning large language models on dialogue transcripts to derive rich contextual representations; and second, learning a joint embedding space for dialogue contexts and backchannel realizations. We evaluate alignment with human perception via triadic similarity judgments (prosodic and cross-lexical) and a context{--}backchannel suitability task. Our results demonstrate that the learned projections substantially improve context-backchannel retrieval compared to previous methods. In addition, they reveal that backchannel form is highly sensitive to extended conversational context and that the learned embeddings align more closely with human judgments than raw WavLM features."
+}
+```
